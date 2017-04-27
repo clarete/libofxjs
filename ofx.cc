@@ -117,6 +117,7 @@ void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
   ofx_set_statement_cb(context, statementCallback, &result);
   ofx_set_transaction_cb(context, transactionCallback, &transactions);
   libofx_proc_file(context, filePath, OFX);
+  libofx_free_context(context);
 
   args.GetReturnValue().Set(result);
 }
