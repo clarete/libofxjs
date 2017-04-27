@@ -15,6 +15,11 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
               Nan::New(ofxAccount.account_name).ToLocalChecked());
   }
 
+  if (ofxAccount.account_number_valid) {
+    node->Set(Nan::New("number").ToLocalChecked(),
+              Nan::New(ofxAccount.account_number).ToLocalChecked());
+  }
+
   if (ofxAccount.currency_valid) {
     node->Set(Nan::New("currency").ToLocalChecked(),
               Nan::New(ofxAccount.currency).ToLocalChecked());
@@ -31,6 +36,16 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
     types[OfxAccountData::OFX_INVESTMENT] = "investment";
     node->Set(Nan::New("type").ToLocalChecked(),
               Nan::New(types[ofxAccount.account_type]).ToLocalChecked());
+  }
+
+  if (ofxAccount.bank_id_valid) {
+    node->Set(Nan::New("bankId").ToLocalChecked(),
+              Nan::New(ofxAccount.bank_id).ToLocalChecked());
+  }
+
+  if (ofxAccount.branch_id_valid) {
+    node->Set(Nan::New("branchId").ToLocalChecked(),
+              Nan::New(ofxAccount.branch_id).ToLocalChecked());
   }
 
   v8::Local<v8::Object> root = *((v8::Local<v8::Object> *) data);
