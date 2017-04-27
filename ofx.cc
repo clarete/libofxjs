@@ -3,10 +3,12 @@
 #include <nan.h>
 #include <libofx/libofx.h>
 
-int accountCallback(const struct OfxAccountData ofxAccount, void *data)
+int statementCallback(const struct OfxStatementData ofxStatement, void *data)
 {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::Local<v8::Object> node = v8::Object::New(isolate);
+
+  struct OfxAccountData ofxAccount = *(ofxStatement.account_ptr);
 
   if (ofxAccount.account_id_valid) {
     node->Set(Nan::New("id").ToLocalChecked(),
@@ -40,6 +42,16 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
               Nan::New(ofxAccount.branch_id).ToLocalChecked());
   }
 
+  // Statement specific fields
+  if (ofxStatement.ledger_balance_valid) {
+    node->Set(Nan::New("balance").ToLocalChecked(),
+              Nan::New(ofxStatement.ledger_balance));
+  }
+  if (ofxStatement.ledger_balance_date_valid) {
+    node->Set(Nan::New("balanceDate").ToLocalChecked(),
+              v8::Date::New(isolate, ofxStatement.ledger_balance_date * 1000));
+  }
+
   v8::Local<v8::Object> root = *((v8::Local<v8::Object> *) data);
   root->Set(Nan::New("account").ToLocalChecked(), node);
   return 0;
@@ -63,7 +75,7 @@ void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
 
   // Parse file
   LibofxContextPtr context = libofx_get_new_context();
-  ofx_set_account_cb(context, accountCallback, &result);
+  ofx_set_statement_cb(context, statementCallback, &result);
   libofx_proc_file(context, filePath, OFX);
 
   args.GetReturnValue().Set(result);
