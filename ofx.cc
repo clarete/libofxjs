@@ -1,3 +1,4 @@
+#include <map>
 #include <fstream>
 #include <nan.h>
 #include <libofx/libofx.h>
@@ -17,6 +18,19 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
   if (ofxAccount.currency_valid) {
     node->Set(Nan::New("currency").ToLocalChecked(),
               Nan::New(ofxAccount.currency).ToLocalChecked());
+  }
+
+  if (ofxAccount.account_type_valid) {
+    std::map<int,std::string> types;
+    types[OfxAccountData::OFX_CHECKING] = "checking";
+    types[OfxAccountData::OFX_SAVINGS] = "savings";
+    types[OfxAccountData::OFX_MONEYMRKT] = "money-market";
+    types[OfxAccountData::OFX_CREDITLINE] = "credit-line";
+    types[OfxAccountData::OFX_CMA] = "cma";
+    types[OfxAccountData::OFX_CREDITCARD] = "credit-card";
+    types[OfxAccountData::OFX_INVESTMENT] = "investment";
+    node->Set(Nan::New("type").ToLocalChecked(),
+              Nan::New(types[ofxAccount.account_type]).ToLocalChecked());
   }
 
   v8::Local<v8::Object> root = *((v8::Local<v8::Object> *) data);
