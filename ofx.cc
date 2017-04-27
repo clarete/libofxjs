@@ -79,7 +79,7 @@ int transactionCallback(const struct OfxTransactionData data, void *cbData)
   }
 
   if (data.fi_id_valid) {
-    node->Set(Nan::New("fitid").ToLocalChecked(), Nan::New(data.fi_id).ToLocalChecked());
+    node->Set(Nan::New("fitId").ToLocalChecked(), Nan::New(data.fi_id).ToLocalChecked());
   }
 
   if (data.date_posted_valid) {
