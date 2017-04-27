@@ -26,16 +26,8 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
   }
 
   if (ofxAccount.account_type_valid) {
-    std::map<int,std::string> types;
-    types[OfxAccountData::OFX_CHECKING] = "checking";
-    types[OfxAccountData::OFX_SAVINGS] = "savings";
-    types[OfxAccountData::OFX_MONEYMRKT] = "money-market";
-    types[OfxAccountData::OFX_CREDITLINE] = "credit-line";
-    types[OfxAccountData::OFX_CMA] = "cma";
-    types[OfxAccountData::OFX_CREDITCARD] = "credit-card";
-    types[OfxAccountData::OFX_INVESTMENT] = "investment";
     node->Set(Nan::New("type").ToLocalChecked(),
-              Nan::New(types[ofxAccount.account_type]).ToLocalChecked());
+              Nan::New(ofxAccount.account_type));
   }
 
   if (ofxAccount.bank_id_valid) {
@@ -53,7 +45,8 @@ int accountCallback(const struct OfxAccountData ofxAccount, void *data)
   return 0;
 }
 
-void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
+{
   Nan::Utf8String filePathArg(args[0]);
   char *filePath = *filePathArg;
 
@@ -76,7 +69,24 @@ void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(result);
 }
 
-void Init(v8::Local<v8::Object> exports) {
+void Constants(v8::Local<v8::Object> exports) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+
+  // OfxAccountData::AccountType
+  v8::Local<v8::Object> atNode = v8::Object::New(isolate);
+  atNode->Set(Nan::New("SAVINGS").ToLocalChecked(), Nan::New(OfxAccountData::OFX_SAVINGS));
+  atNode->Set(Nan::New("CHECKING").ToLocalChecked(), Nan::New(OfxAccountData::OFX_CHECKING));
+  atNode->Set(Nan::New("MONEYMRKT").ToLocalChecked(), Nan::New(OfxAccountData::OFX_MONEYMRKT));
+  atNode->Set(Nan::New("CREDITLINE").ToLocalChecked(), Nan::New(OfxAccountData::OFX_CREDITLINE));
+  atNode->Set(Nan::New("CMA").ToLocalChecked(), Nan::New(OfxAccountData::OFX_CMA));
+  atNode->Set(Nan::New("CREDITCARD").ToLocalChecked(), Nan::New(OfxAccountData::OFX_CREDITCARD));
+  atNode->Set(Nan::New("INVESTMENT").ToLocalChecked(), Nan::New(OfxAccountData::OFX_INVESTMENT));
+  exports->Set(Nan::New("AccountType").ToLocalChecked(), atNode);
+}
+
+void Init(v8::Local<v8::Object> exports)
+{
+  Constants(exports);
   exports->Set(Nan::New("parseFile").ToLocalChecked(),
                Nan::New<v8::FunctionTemplate>(parseFile)->GetFunction());
 }
