@@ -12,7 +12,7 @@ accountInfo(const struct OfxAccountData* account)
   auto node = v8::Object::New(isolate);
 
   if (account->account_id_valid) {
-    node->Set(NEW_STR_LOCAL("id"), NEW_STR_LOCAL(account->account_id));
+    node->Set(NEW_STR_LOCAL("acctId"), NEW_STR_LOCAL(account->account_id));
     node->Set(NEW_STR_LOCAL("name"), NEW_STR_LOCAL(account->account_name));
   }
   if (account->account_number_valid) {
