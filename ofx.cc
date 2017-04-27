@@ -5,57 +5,70 @@
 
 #define NEW_STR_LOCAL(x) Nan::New(x).ToLocalChecked()
 
-
-int statementCallback(const struct OfxStatementData ofxStatement, void *data)
+static v8::Local<v8::Object>
+accountInfo(const struct OfxAccountData* account)
 {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Object> node = v8::Object::New(isolate);
+  auto isolate = v8::Isolate::GetCurrent();
+  auto node = v8::Object::New(isolate);
 
-  struct OfxAccountData ofxAccount = *(ofxStatement.account_ptr);
-
-  if (ofxAccount.account_id_valid) {
-    node->Set(NEW_STR_LOCAL("id"), NEW_STR_LOCAL(ofxAccount.account_id));
-    node->Set(NEW_STR_LOCAL("name"), NEW_STR_LOCAL(ofxAccount.account_name));
+  if (account->account_id_valid) {
+    node->Set(NEW_STR_LOCAL("id"), NEW_STR_LOCAL(account->account_id));
+    node->Set(NEW_STR_LOCAL("name"), NEW_STR_LOCAL(account->account_name));
+  }
+  if (account->account_number_valid) {
+    node->Set(NEW_STR_LOCAL("number"), NEW_STR_LOCAL(account->account_number));
+  }
+  if (account->currency_valid) {
+    node->Set(NEW_STR_LOCAL("currency"), NEW_STR_LOCAL(account->currency));
+  }
+  if (account->account_type_valid) {
+    node->Set(NEW_STR_LOCAL("type"), Nan::New(account->account_type));
+  }
+  if (account->bank_id_valid) {
+    node->Set(NEW_STR_LOCAL("bankId"), NEW_STR_LOCAL(account->bank_id));
+  }
+  if (account->branch_id_valid) {
+    node->Set(NEW_STR_LOCAL("branchId"), NEW_STR_LOCAL(account->branch_id));
   }
 
-  if (ofxAccount.account_number_valid) {
-    node->Set(NEW_STR_LOCAL("number"), NEW_STR_LOCAL(ofxAccount.account_number));
-  }
+  return node;
+}
 
-  if (ofxAccount.currency_valid) {
-    node->Set(NEW_STR_LOCAL("currency"), NEW_STR_LOCAL(ofxAccount.currency));
-  }
+static v8::Local<v8::Object>
+accountBalance(const struct OfxStatementData& statement)
+{
+  auto isolate = v8::Isolate::GetCurrent();
+  auto node = v8::Object::New(isolate);
 
-  if (ofxAccount.account_type_valid) {
-    node->Set(NEW_STR_LOCAL("type"), Nan::New(ofxAccount.account_type));
+  if (statement.ledger_balance_valid) {
+    node->Set(NEW_STR_LOCAL("ledger"), Nan::New(statement.ledger_balance));
   }
+  if (statement.ledger_balance_date_valid) {
+    node->Set(NEW_STR_LOCAL("ledgerDate"),
+              v8::Date::New(isolate, statement.ledger_balance_date * 1000));
+  }
+  return node;
+}
 
-  if (ofxAccount.bank_id_valid) {
-    node->Set(NEW_STR_LOCAL("bankId"), NEW_STR_LOCAL(ofxAccount.bank_id));
-  }
 
-  if (ofxAccount.branch_id_valid) {
-    node->Set(NEW_STR_LOCAL("branchId"), NEW_STR_LOCAL(ofxAccount.branch_id));
-  }
+static int
+statementCallback(const struct OfxStatementData ofxStatement, void *data)
+{
+  auto isolate = v8::Isolate::GetCurrent();
+  auto account = v8::Object::New(isolate);
+  account->Set(NEW_STR_LOCAL("info"), accountInfo(ofxStatement.account_ptr));
+  account->Set(NEW_STR_LOCAL("balance"), accountBalance(ofxStatement));
 
-  // Statement specific fields
-  if (ofxStatement.ledger_balance_valid) {
-    node->Set(NEW_STR_LOCAL("balance"), Nan::New(ofxStatement.ledger_balance));
-  }
-  if (ofxStatement.ledger_balance_date_valid) {
-    node->Set(NEW_STR_LOCAL("balanceDate"),
-              v8::Date::New(isolate, ofxStatement.ledger_balance_date * 1000));
-  }
-
-  v8::Local<v8::Object> root = *((v8::Local<v8::Object> *) data);
-  root->Set(NEW_STR_LOCAL("account"), node);
+  auto root = v8::Local<v8::Object>::Cast(*(v8::Local<v8::Object> *) data);
+  root->Set(NEW_STR_LOCAL("account"), account);
   return 0;
 }
 
-int transactionCallback(const struct OfxTransactionData data, void *cbData)
+static int
+transactionCallback(const struct OfxTransactionData data, void *cbData)
 {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Object> node = v8::Object::New(isolate);
+  auto isolate = v8::Isolate::GetCurrent();
+  auto node = v8::Object::New(isolate);
 
   if (data.amount_valid) {
     node->Set(NEW_STR_LOCAL("amount"), Nan::New(data.amount));
@@ -83,13 +96,13 @@ int transactionCallback(const struct OfxTransactionData data, void *cbData)
   }
 
   // Append the above node to the transactions array
-  v8::Local<v8::Array> arrTransactions =
-    v8::Local<v8::Array>::Cast(*((v8::Local<v8::Array> *) cbData));
+  auto arrTransactions = v8::Local<v8::Array>::Cast(*((v8::Local<v8::Array> *) cbData));
   arrTransactions->Set(arrTransactions->Length(), node);
   return 0;
 }
 
-void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
+static void
+parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
   Nan::Utf8String filePathArg(args[0]);
   char *filePath = *filePathArg;
@@ -117,11 +130,12 @@ void parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
   args.GetReturnValue().Set(result);
 }
 
-void Constants(v8::Local<v8::Object> exports) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+static void
+Constants(v8::Local<v8::Object> exports) {
+  auto isolate = v8::Isolate::GetCurrent();
 
   // OfxAccountData::AccountType
-  v8::Local<v8::Object> atNode = v8::Object::New(isolate);
+  auto atNode = v8::Object::New(isolate);
   atNode->Set(NEW_STR_LOCAL("CMA"), Nan::New(OfxAccountData::OFX_CMA));
   atNode->Set(NEW_STR_LOCAL("SAVINGS"), Nan::New(OfxAccountData::OFX_SAVINGS));
   atNode->Set(NEW_STR_LOCAL("CHECKING"), Nan::New(OfxAccountData::OFX_CHECKING));
@@ -132,7 +146,7 @@ void Constants(v8::Local<v8::Object> exports) {
   exports->Set(NEW_STR_LOCAL("AccountType"), atNode);
 
   // TransactionType
-  v8::Local<v8::Object> ttNode = v8::Object::New(isolate);
+  auto ttNode = v8::Object::New(isolate);
   ttNode->Set(NEW_STR_LOCAL("CREDIT"), Nan::New(OFX_CREDIT));
   ttNode->Set(NEW_STR_LOCAL("DEBIT"), Nan::New(OFX_DEBIT));
   ttNode->Set(NEW_STR_LOCAL("INT"), Nan::New(OFX_INT));
@@ -153,7 +167,8 @@ void Constants(v8::Local<v8::Object> exports) {
   exports->Set(NEW_STR_LOCAL("TransactionType"), ttNode);
 }
 
-void Init(v8::Local<v8::Object> exports)
+static void
+Init(v8::Local<v8::Object> exports)
 {
   Constants(exports);
   exports->Set(NEW_STR_LOCAL("parseFile"),
