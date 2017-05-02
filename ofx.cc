@@ -165,6 +165,27 @@ Constants(v8::Local<v8::Object> exports) {
   ttNode->Set(NEW_STR_LOCAL("REPEATPMT"), Nan::New(OFX_REPEATPMT));
   ttNode->Set(NEW_STR_LOCAL("OTHER"), Nan::New(OFX_OTHER));
   exports->Set(NEW_STR_LOCAL("TransactionType"), ttNode);
+
+  // TransactionTypeNames
+  auto ttNameNode = v8::Object::New(isolate);
+  ttNameNode->Set(Nan::New(OFX_CREDIT), NEW_STR_LOCAL("CREDIT"));
+  ttNameNode->Set(Nan::New(OFX_DEBIT), NEW_STR_LOCAL("DEBIT"));
+  ttNameNode->Set(Nan::New(OFX_INT), NEW_STR_LOCAL("INT"));
+  ttNameNode->Set(Nan::New(OFX_DIV), NEW_STR_LOCAL("DIV"));
+  ttNameNode->Set(Nan::New(OFX_FEE), NEW_STR_LOCAL("FEE"));
+  ttNameNode->Set(Nan::New(OFX_SRVCHG), NEW_STR_LOCAL("SRVCHG"));
+  ttNameNode->Set(Nan::New(OFX_DEP), NEW_STR_LOCAL("DEP"));
+  ttNameNode->Set(Nan::New(OFX_ATM), NEW_STR_LOCAL("ATM"));
+  ttNameNode->Set(Nan::New(OFX_POS), NEW_STR_LOCAL("POS"));
+  ttNameNode->Set(Nan::New(OFX_XFER), NEW_STR_LOCAL("XFER"));
+  ttNameNode->Set(Nan::New(OFX_CHECK), NEW_STR_LOCAL("CHECK"));
+  ttNameNode->Set(Nan::New(OFX_PAYMENT), NEW_STR_LOCAL("PAYMENT"));
+  ttNameNode->Set(Nan::New(OFX_CASH), NEW_STR_LOCAL("CASH"));
+  ttNameNode->Set(Nan::New(OFX_DIRECTDEP), NEW_STR_LOCAL("DIRECTDEP"));
+  ttNameNode->Set(Nan::New(OFX_DIRECTDEBIT), NEW_STR_LOCAL("DIRECTDEBIT"));
+  ttNameNode->Set(Nan::New(OFX_REPEATPMT), NEW_STR_LOCAL("REPEATPMT"));
+  ttNameNode->Set(Nan::New(OFX_OTHER), NEW_STR_LOCAL("OTHER"));
+  exports->Set(NEW_STR_LOCAL("TransactionTypeNames"), ttNameNode);
 }
 
 static void
