@@ -5,6 +5,13 @@
 
 #define NEW_STR_LOCAL(x) Nan::New(x).ToLocalChecked()
 
+typedef std::map< OfxAccountData *, v8::Local<v8::Array> > account_map_t;
+
+typedef struct {
+  v8::Local<v8::Array> root;
+  account_map_t map;
+} account_array_state_t;
+
 static v8::Local<v8::Object>
 accountInfo(const struct OfxAccountData* account)
 {
@@ -50,23 +57,26 @@ accountBalance(const struct OfxStatementData& statement)
   return node;
 }
 
-
 static int
 statementCallback(const struct OfxStatementData ofxStatement, void *data)
 {
+  account_array_state_t *state = (account_array_state_t *) data;
   auto isolate = v8::Isolate::GetCurrent();
   auto account = v8::Object::New(isolate);
+  auto transactions = v8::Array::New(isolate);
+  auto root = v8::Local<v8::Array>::Cast(state->root);
   account->Set(NEW_STR_LOCAL("info"), accountInfo(ofxStatement.account_ptr));
   account->Set(NEW_STR_LOCAL("balance"), accountBalance(ofxStatement));
-
-  auto root = v8::Local<v8::Object>::Cast(*(v8::Local<v8::Object> *) data);
-  root->Set(NEW_STR_LOCAL("account"), account);
+  account->Set(NEW_STR_LOCAL("transactions"), transactions);
+  root->Set(root->Length(), account);
+  state->map[ofxStatement.account_ptr] = transactions;
   return 0;
 }
 
 static int
 transactionCallback(const struct OfxTransactionData data, void *cbData)
 {
+  account_array_state_t *state = (account_array_state_t *) cbData;
   auto isolate = v8::Isolate::GetCurrent();
   auto node = v8::Object::New(isolate);
 
@@ -96,8 +106,8 @@ transactionCallback(const struct OfxTransactionData data, void *cbData)
   }
 
   // Append the above node to the transactions array
-  auto arrTransactions = v8::Local<v8::Array>::Cast(*((v8::Local<v8::Array> *) cbData));
-  arrTransactions->Set(arrTransactions->Length(), node);
+  v8::Local<v8::Array> transactions = state->map[data.account_ptr];
+  transactions->Set(transactions->Length(), node);
   return 0;
 }
 
@@ -115,19 +125,21 @@ parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
   }
 
   // Create result object
-  v8::Isolate* isolate = args.GetIsolate();
-  v8::Local<v8::Object> result = v8::Object::New(isolate);
-  v8::Local<v8::Array> transactions = v8::Array::New(isolate);
-  result->Set(NEW_STR_LOCAL("transactions"), transactions);
+  auto isolate = args.GetIsolate();
+  auto accounts = v8::Array::New(isolate);
+
+  // Save pointers for account objects
+  account_map_t map;
+  account_array_state_t state = { accounts, map };
 
   // Parse file
   LibofxContextPtr context = libofx_get_new_context();
-  ofx_set_statement_cb(context, statementCallback, &result);
-  ofx_set_transaction_cb(context, transactionCallback, &transactions);
+  ofx_set_statement_cb(context, statementCallback, &state);
+  ofx_set_transaction_cb(context, transactionCallback, &state);
   libofx_proc_file(context, filePath, OFX);
   libofx_free_context(context);
 
-  args.GetReturnValue().Set(result);
+  args.GetReturnValue().Set(accounts);
 }
 
 static void
