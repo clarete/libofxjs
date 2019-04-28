@@ -1,0 +1,38 @@
+{
+  "name": "libofx",
+  "version": "1.0.0",
+  "description": "NodeJS bindings for the libofx library",
+  "main": "index.js",
+  "gpyfile": true,
+  "scripts": {
+    "build": "node-gyp build --directory .",
+    "rebuild": "node-gyp build --directory .",
+    "clean": "rm -rf build",
+    "pretest": "npm run build",
+    "test": "jest $*"
+  },
+  "author": "Lincoln Clarete",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "jest": "^24.7.1"
+  },
+  "jest": {
+    "rootDir": ".",
+    "testMatch": [
+      "<rootDir>/tests/*.js"
+    ],
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js",
+      "json"
+    ],
+    "testPathIgnorePatterns": [
+      "node_modules/.*"
+    ]
+  },
+  "dependencies": {
+    "bindings": "^1.2.1",
+    "nan": "^2.6.2",
+    "node-gyp": "^4.0.0"
+  }
+}
