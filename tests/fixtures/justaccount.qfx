@@ -1,0 +1,33 @@
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <DTSERVER>20170327111449
+      <LANGUAGE>ENG
+      <FI>
+        <ORG>Citibank
+        <FID>2102
+      </FI>
+      <INTU.BID>2102
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>0
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <STMTRS>
+        <CURDEF>USD
+        <BANKACCTFROM>
+          <BANKID>003456789
+          <BRANCHID>Branch-xxx
+          <ACCTID>XXXXXX0000
+          <ACCTTYPE>CHECKING
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+        </BANKTRANLIST>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>
