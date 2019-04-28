@@ -1,6 +1,7 @@
 // @flow
-import bindings from 'bindings';
+const bindings = require('bindings');
 
-const ofx = bindings({ bindings: 'ofx', module_root: __dirname });
-
-export default ofx;
+module.exports = bindings({
+  bindings: 'ofx',
+  module_root: __dirname,
+});
