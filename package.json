@@ -5,9 +5,9 @@
   "main": "index.js",
   "gpyfile": true,
   "scripts": {
-    "build": "node-gyp build --directory .",
-    "rebuild": "node-gyp build --directory .",
-    "clean": "rm -rf build",
+    "build": "node-gyp configure && node-gyp build",
+    "rebuild": "npm run clean && npm run build",
+    "clean": "node-gyp clean",
     "pretest": "npm run build",
     "test": "jest $*"
   },
