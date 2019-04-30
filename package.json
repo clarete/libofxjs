@@ -4,6 +4,10 @@
   "description": "NodeJS bindings for the libofx library",
   "main": "index.js",
   "gpyfile": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/clarete/libofxjs.git"
+  },
   "scripts": {
     "build": "node-gyp configure && node-gyp build",
     "rebuild": "npm run clean && npm run build",
