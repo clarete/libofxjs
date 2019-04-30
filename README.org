@@ -1,0 +1,58 @@
+* NodeJS bindings for LibOFX
+
+  This allows you to parse bank statemetns in formats like OFX & QIF
+  using ~nodejs~. This project only provides the bindings, it's
+  https://github.com/libofx/libofx that does the heavy lifting of
+  parsing. The library actually does more stuff, but the binding has
+  limited feature support.
+
+* Basic Example
+
+** List transactions of all accounts in the file
+
+   #+begin_src javascript
+   const accounts = libofx.parseFile("/path/to/file.ofx");
+   for (const account of accounts) {
+     console.log(`Account ${account.info.number}`);
+     console.log(`  Balance: ${account.balance.ledger}`);
+     console.log(`  Transactions`);
+     for (const tr of account.transactions) {
+       console.log(`  * ${tr.memo} ${tr.amount} (${tr.datePosted})`);
+     }
+   }
+   #+end_src
+
+* API Reference
+
+  The library exports one function:
+
+  ~libofx.parseFile(filePath: string): Array<Account>~.
+
+  The ~Account~ object has the following fields:
+
+  #+begin_src javascript
+  type Account = {
+     acctId: string,
+     type: libofx.AccountType,
+     name: string
+     number: string,
+     currency: string,
+     bankId: string,
+     branchId: string,
+  }
+  #+end_src
+
+  The field ~Account.type~ may contain the following values:
+  
+  * ~libofx.AccountType.CHECKING~
+  * ~libofx.AccountType.CMA~
+  * ~libofx.AccountType.CREDITCARD~
+  * ~libofx.AccountType.CREDITLINE~
+  * ~libofx.AccountType.INVESTMENT~
+  * ~libofx.AccountType.MONEYMRKT~
+  * ~libofx.AccountType.SAVINGS~
+  
+* Does it miss anything?
+
+  Opening issues and pull requests for fixing or extending the
+  software are more than welcome!
