@@ -16,7 +16,7 @@
     "test": "jest $*"
   },
   "author": "Lincoln Clarete",
-  "license": "GPL-3.0",
+  "license": "GPL-2.0",
   "devDependencies": {
     "jest": "^24.7.1"
   },
