@@ -198,9 +198,6 @@ Constants(v8::Local<v8::Object> exports) {
   exports->Set(NEW_STR_LOCAL("TransactionTypeNames"), ttNameNode);
 }
 
-// static void
-// Init(v8::Local<v8::Object> exports)
-
 NAN_MODULE_INIT(Init)
 {
   Constants(target);
