@@ -1,0 +1,5 @@
+2019-04-29  Lincoln Clarete  <lincoln@clarete.li>
+
+	* package.json:
+	* COPYING: License must be GPL-v2 because `libofx' is licensed as
+	GPLv2 only

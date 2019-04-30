@@ -1,6 +1,6 @@
 {
   "name": "libofx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NodeJS bindings for the libofx library",
   "main": "index.js",
   "gpyfile": true,
