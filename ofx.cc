@@ -3,7 +3,7 @@
 #include <nan.h>
 #include <libofx/libofx.h>
 
-#define NEW_STR_LOCAL(x) Nan::New(x).ToLocalChecked()
+#define NEW_STR_LOCAL(x) Nan::New<v8::String>(x).ToLocalChecked()
 
 typedef std::map< OfxAccountData *, v8::Local<v8::Array> > account_map_t;
 
@@ -51,8 +51,8 @@ accountBalance(const struct OfxStatementData& statement)
     node->Set(NEW_STR_LOCAL("ledger"), Nan::New(statement.ledger_balance));
   }
   if (statement.ledger_balance_date_valid) {
-    node->Set(NEW_STR_LOCAL("ledgerDate"),
-              v8::Date::New(isolate, statement.ledger_balance_date * 1000));
+    auto date = Nan::New<v8::Date>(statement.ledger_balance_date * 1000).ToLocalChecked();
+    node->Set(NEW_STR_LOCAL("ledgerDate"), date);
   }
   return node;
 }
@@ -101,8 +101,8 @@ transactionCallback(const struct OfxTransactionData data, void *cbData)
   }
 
   if (data.date_posted_valid) {
-    node->Set(NEW_STR_LOCAL("datePosted"),
-              v8::Date::New(isolate, data.date_posted * 1000));
+    auto date = Nan::New<v8::Date>(data.date_posted * 1000).ToLocalChecked();
+    node->Set(NEW_STR_LOCAL("datePosted"), date);
   }
 
   // Append the above node to the transactions array
@@ -110,11 +110,9 @@ transactionCallback(const struct OfxTransactionData data, void *cbData)
   transactions->Set(transactions->Length(), node);
   return 0;
 }
-
-static void
-parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
+NAN_METHOD(parseFile)
 {
-  Nan::Utf8String filePathArg(args[0]);
+  Nan::Utf8String filePathArg(info[0]);
   char *filePath = *filePathArg;
 
   // Some sanity check
@@ -125,7 +123,7 @@ parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
   }
 
   // Create result object
-  auto isolate = args.GetIsolate();
+  auto isolate = info.GetIsolate();
   auto accounts = v8::Array::New(isolate);
 
   // Save pointers for account objects
@@ -139,7 +137,7 @@ parseFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
   libofx_proc_file(context, filePath, OFX);
   libofx_free_context(context);
 
-  args.GetReturnValue().Set(accounts);
+  info.GetReturnValue().Set(accounts);
 }
 
 static void
@@ -200,12 +198,14 @@ Constants(v8::Local<v8::Object> exports) {
   exports->Set(NEW_STR_LOCAL("TransactionTypeNames"), ttNameNode);
 }
 
-static void
-Init(v8::Local<v8::Object> exports)
+// static void
+// Init(v8::Local<v8::Object> exports)
+
+NAN_MODULE_INIT(Init)
 {
-  Constants(exports);
-  exports->Set(NEW_STR_LOCAL("parseFile"),
-               Nan::New<v8::FunctionTemplate>(parseFile)->GetFunction());
+  Constants(target);
+  Nan::Set(target, NEW_STR_LOCAL("parseFile"),
+           Nan::GetFunction(Nan::New<v8::FunctionTemplate>(parseFile)).ToLocalChecked());
 }
 
 NODE_MODULE(ofx, Init)
